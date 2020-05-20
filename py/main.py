@@ -25,7 +25,6 @@ def fixuris(s):
             continue
         fixed = '"'+re.sub(r'[^-,.;\wäüöÖÜÄß ]',"",broken.encode('raw-unicode-escape').decode("unicode-escape"))+'"'
         s = s.replace(broken,fixed+"@"+lang)        
-    #s = s.encode("raw-unicode-escape").decode("unicode-escape")
     return s
 
 ignore = ["meta"]
@@ -36,6 +35,9 @@ files = [f for f in [glob.glob(p) for p in [ttl,ttl+".gz"]] for f in f]
 if(len(files)<1):
     print("No files found in folder",infolder)
     sys.exit(1)
+
+if not os.path.exists(outfolder):
+    os.mkdir(outfolder)
 
 for f in files:
     for ig in ignore:
@@ -54,15 +56,9 @@ for f in files:
     g = rdflib.Graph()
     try:
         g.parse(publicID="/" ,format="n3",data=turtle)
-        unsorted = g.serialize(format="nt", encoding=None)
-        lines = sorted(unsorted.splitlines())
-        nt = b"\n".join(lines).decode("utf-8")
-        outdir = outfolder+"/"+prefix
-        if not os.path.exists(outdir):
-            os.mkdir(outdir)
-        file = open(outpath,"w")
         print("Write",outpath)
-        file.write(nt)
+        g.serialize(destination=outpath,format="nt", encoding=None)
+        os.system("sort "+outpath+" -o "+outpath)
     except rdflib.plugins.parsers.notation3.BadSyntax: 
         print("Cannot parse file ",f)
         continue
