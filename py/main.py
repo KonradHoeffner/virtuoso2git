@@ -5,27 +5,14 @@ import sys
 import os
 import re
 
-if(len(sys.argv)<4):
-    print("Usage: virtuoso2git infolder outfolder prefix [lang]")
+if(len(sys.argv)<3):
+    print("Usage: virtuoso2git infolder outfolder prefix")
     sys.exit(1)
 
 infolder = sys.argv[1]
 outfolder = sys.argv[2]
 prefix = sys.argv[3]
-lang = sys.argv[4]
-if(lang==None):
-    lang = "de"
 suffix = "000001"
-
-# some releases around 0.8 had some literals with spaces mistakenly modelled as URIs, which breaks N-Triples serialization.
-def fixuris(s):
-    uris = re.findall(r"<[^>]*\\u00[^>]*>", s)
-    for broken in uris:
-        if(broken.startswith("<http://")):
-            continue
-        fixed = '"'+re.sub(r'[^-,.;\wäüöÖÜÄß ]',"",broken.encode('raw-unicode-escape').decode("unicode-escape"))+'"'
-        s = s.replace(broken,fixed+"@"+lang)        
-    return s
 
 ignore = ["meta"]
 
@@ -52,7 +39,6 @@ for f in files:
     else:
         stream = open(f,"rt")
     turtle = stream.read()
-    turtle = fixuris(turtle)
     g = rdflib.Graph()
     try:
         g.parse(publicID="/" ,format="n3",data=turtle)
