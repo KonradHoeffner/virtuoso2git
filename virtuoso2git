@@ -1,1 +1,1 @@
-python py/main.py
+python py/main.py "$@"
