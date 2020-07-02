@@ -44,7 +44,7 @@ for f in files:
         g.parse(publicID="/" ,format="n3",data=turtle)
         print("Write",outpath)
         g.serialize(destination=outpath,format="nt", encoding=None)
-        os.system("sort "+outpath+" -o "+outpath)
+        os.system("LC_ALL=en_US.UTF-8 sort "+outpath+" -o "+outpath) # fix locale to prevent diffs across different locales
     except rdflib.plugins.parsers.notation3.BadSyntax: 
         print("Cannot parse file ",f)
         continue
