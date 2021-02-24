@@ -4,6 +4,7 @@ import rdflib
 import sys
 import os
 import re
+from multiprocessing import Pool
 
 if(len(sys.argv)<3):
     print("Usage: virtuoso2git infolder outfolder prefix")
@@ -26,10 +27,7 @@ if(len(files)<1):
 if not os.path.exists(outfolder):
     os.mkdir(outfolder)
 
-for f in files:
-    for ig in ignore:
-        if(ig in f):
-            continue
+def convert(f):
     print("Read",f)
     outname = re.search(prefix+r"(.*)"+suffix,f).group(1) + ".nt"
     outpath = outfolder + "/" + outname
@@ -47,4 +45,13 @@ for f in files:
         os.system("LC_ALL=en_US.UTF-8 sort "+outpath+" -o "+outpath) # fix locale to prevent diffs across different locales
     except rdflib.plugins.parsers.notation3.BadSyntax: 
         print("Cannot parse file ",f)
-        continue
+
+pool = Pool()
+for f in files:
+    for ig in ignore:
+        if(ig in f):
+            continue
+    pool.apply_async(convert,(f,))
+pool.close()
+pool.join()
+
